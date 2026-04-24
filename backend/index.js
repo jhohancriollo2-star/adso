@@ -274,6 +274,42 @@ app.put('/api/pedidos/:id', async (req, res) => {
     }
 });
 
+// Ruta DELETE para eliminar un pedido permanentemente
+app.delete('/api/pedidos/:id', async (req, res) => {
+    // 1. Extraer el ID del pedido desde la URL
+    const { id } = req.params;
+
+    try {
+        // 2. Ejecutar la eliminación en Supabase
+        // Usamos .select() al final para saber si realmente se borró algo
+        const { data, error } = await supabase
+            .from('pedidos')
+            .delete()
+            .eq('id', id)
+            .select();
+
+        // 3. Manejar errores de la base de datos
+        if (error) {
+            return res.status(400).json({ error: error.message });
+        }
+
+        // 4. Verificar si el pedido existía (si data está vacío, no borró nada)
+        if (data.length === 0) {
+            return res.status(404).json({ error: "El pedido no existe o ya fue eliminado" });
+        }
+
+        // 5. Retornar mensaje de éxito
+        res.status(200).json({ 
+            mensaje: "Pedido eliminado exitosamente",
+            pedido_eliminado: data[0] 
+        });
+
+    } catch (err) {
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
+});
+
+
 
 
 const PORT=3000;
