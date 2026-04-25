@@ -309,6 +309,52 @@ app.delete('/api/pedidos/:id', async (req, res) => {
     }
 });
 
+///crear factura
+
+// Ruta 1: Crear una Factura (POST)
+app.post('/api/facturas', async (req, res) => {
+    const { id_usuario, id_pedido, subtotal, impuesto } = req.body;
+
+    // 1. Validar que no falten datos
+    if (!id_usuario || !id_pedido || subtotal === undefined || impuesto === undefined) {
+        return res.status(400).json({ error: "Faltan datos obligatorios" });
+    }
+
+    // 2. Generar número de factura (FAC-XXXX)
+    // Consultamos el conteo para el correlativo
+    const { count, error: countError } = await supabase
+        .from('factura')
+        .select('*', { count: 'exact', head: true });
+
+    if (countError) return res.status(500).json({ error: countError.message });
+
+    const numeroFacturaAuto = `FAC-${(count + 1).toString().padStart(4, '0')}`;
+
+    // 3. Calcular el total
+    const total = parseFloat(subtotal) + parseFloat(impuesto);
+
+    // 4. Guardar la factura
+    const { data, error } = await supabase
+        .from('factura')
+        .insert([
+            {
+                numero_factura: numeroFacturaAuto,
+                id_usuario,
+                id_pedido,
+                subtotal,
+                impuesto,
+                total,
+                estado: 'pendiente',
+                fecha_factura: new Date().toISOString().split('T')[0]
+            }
+        ])
+        .select();
+
+    if (error) return res.status(500).json({ error: error.message });
+
+    // 5. Retornar éxito
+    res.status(201).json(data[0]);
+});
 
 
 
