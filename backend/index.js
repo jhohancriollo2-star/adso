@@ -29,23 +29,19 @@ app.get("/personal", (req, res)=>{
  });
 });
 
-app.get("/usuario", async (req,res) =>{
-    const{data, error} = await supabase
-    .from("usuario")
-    .select("*");
 
-    if (error){
-        console.error("error:", error);
-        return res.status(500).json({error});
-    }
 
-    console.log ("usuarios obtenidos:",data);
-    res.json({
-        total:data.length,
-        usuarios: data
-    });
-    
-});
+
+
+
+
+
+
+
+
+
+
+
 
 
 //ruta de crear usuarios a la base de datos 
